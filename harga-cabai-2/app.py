@@ -1,142 +1,182 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-# ===============================
-#  CONFIG HALAMAN
-# ===============================
+# -------------------------
+# Page config
+# -------------------------
 st.set_page_config(
-    page_title="Prediksi Harga Cabai UMKM",
+    page_title="Prediksi Harga Cabai di Pasar Surakarta untuk UMKM",
     page_icon="🌶️",
     layout="wide"
 )
 
-# ===============================
-#  CSS TAMPILAN
-# ===============================
+# -------------------------
+# Styling (simple & neat)
+# -------------------------
 st.markdown("""
-    <style>
-        body {
-            background-color: #fffafa;
-        }
-        .header {
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            background: linear-gradient(90deg, #ff4b4b, #ff8f8f);
-            color: white;
-            margin-bottom: 25px;
-        }
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 6px solid #ff4b4b;
-            margin-bottom: 20px;
-        }
-    </style>
+<style>
+  body { background-color: #fff9f8; }
+  .header {
+    background: linear-gradient(90deg,#ff4d4d,#ff8a5c);
+    color: white;
+    padding: 18px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .tip {
+    background: #fff4f2;
+    border-left: 5px solid #ff6b4d;
+    padding: 12px;
+    border-radius: 8px;
+  }
+</style>
 """, unsafe_allow_html=True)
 
-# ===============================
-#  HEADER
-# ===============================
+# -------------------------
+# Header (title + tagline you asked)
+# -------------------------
 st.markdown("""
-<div class='header'>
-st.markdown("""
-    <div style='text-align:center; margin-bottom:20px;'>
-        <h1 style='color:#c10000; font-weight:800; font-size:38px;'>
-            🌶️ Prediksi Harga Cabai di Pasar Surakarta
-        </h1>
-        <h3 style='color:#444; font-weight:500; margin-top:-10px;'>
-            Aplikasi Analisis Harga untuk UMKM Pengguna Cabai
-        </h3>
-        <p style='color:#777; font-size:15px; margin-top:-5px;'>
-            Membantu UMKM memantau fluktuasi harga dan mengambil keputusan belanja yang lebih tepat
-        </p>
-    </div>
-""", unsafe_allow_html=True)
+<div class="header">
+  <h1 style="margin:0;">🌶️ Prediksi Harga Cabai di Pasar Surakarta untuk UMKM</h1>
+  <div style="opacity:0.95; margin-top:6px;">Aplikasi visual untuk membantu UMKM memantau harga mingguan dan mengambil keputusan belanja</div>
 </div>
 """, unsafe_allow_html=True)
 
-# ===============================
-#  DATA HARGA BULANAN → MINGGUAN
-# ===============================
-
-data_harga = {
-    "Agustus":  [35000, 36000, 37000, 36500],
-    "September":[38000, 42000, 40000, 39000],
-    "Oktober":  [41000, 43000, 44500, 42000],
-    "November": [45000, 47000, 46000, 45500]
+# -------------------------
+# Default weekly data per month (editable)
+# -------------------------
+default_data = {
+    "Agustus":   [35000, 36000, 37000, 36500],
+    "September": [38000, 42000, 40000, 39000],
+    "Oktober":   [41000, 43000, 44500, 42000],
+    "November":  [45000, 47000, 46000, 45500]
 }
 
-# ===============================
-#  KOLOM INPUT
-# ===============================
-col1, col2 = st.columns([1,2])
+# -------------------------
+# Layout: left = controls, right = output
+# -------------------------
+col_left, col_right = st.columns([1, 2])
 
-with col1:
-    st.markdown("<div class='section'>", unsafe_allow_html=True)
-    st.subheader("🗓️ Pilih Bulan & Minggu")
-    
-    bulan = st.selectbox("Pilih Bulan:", list(data_harga.keys()))
-    minggu = st.slider("Minggu ke:", 1, 4, 1)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+with col_left:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Input & Pengaturan Data")
+    st.write("Pilih bulan, sesuaikan nilai mingguan (opsional).")
 
-# ===============================
-#  PREDIKSI (INTERPOLASI LINEAR)
-# ===============================
-with col2:
-    st.markdown("<div class='section'>", unsafe_allow_html=True)
-    st.subheader("📊 Grafik Harga & Prediksi Mingguan")
+    # month selector
+    month = st.selectbox("Pilih Bulan", list(default_data.keys()))
 
-    harga_bulanan = data_harga[bulan]
-    x = np.array([1, 2, 3, 4])
-    y = np.array(harga_bulanan)
+    # show editable weekly values in expander
+    with st.expander("Lihat / Edit data mingguan (opsional)"):
+        w1 = st.number_input("Minggu 1 (Rp)", value=int(default_data[month][0]), min_value=0, step=500)
+        w2 = st.number_input("Minggu 2 (Rp)", value=int(default_data[month][1]), min_value=0, step=500)
+        w3 = st.number_input("Minggu 3 (Rp)", value=int(default_data[month][2]), min_value=0, step=500)
+        w4 = st.number_input("Minggu 4 (Rp)", value=int(default_data[month][3]), min_value=0, step=500)
 
-    # Interpolasi linear manual
-    if minggu == 1:
-        pred = y[0]
-    else:
-        m = (y[minggu-1] - y[minggu-2]) / (1)
-        pred = y[minggu-2] + m
+    st.write("---")
+    st.caption("Gunakan slider di kanan untuk memilih minggu (bisa berangka desimal untuk interpolasi linear).")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Grafik
-    fig, ax = plt.subplots(figsize=(7,4))
-    ax.plot(x, y, "o-r", label="Data Harga per Minggu")
-    ax.scatter(minggu, pred, s=120, color="black", label=f"Prediksi Minggu {minggu}")
+with col_right:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Grafik & Prediksi Mingguan")
+
+    # prepare arrays (use edited values if changed)
+    xp = np.array([1, 2, 3, 4], dtype=float)
+    yp = np.array([w1, w2, w3, w4], dtype=float)
+
+    # slider: allow fractional (interpolate between weeks)
+    week = st.slider("Pilih minggu (1.0 = Minggu 1, 2.5 = tengah Minggu 2-3)", min_value=1.0, max_value=4.0, value=1.0, step=0.1)
+
+    # linear interpolation using numpy.interp
+    pred_price = float(np.interp(week, xp, yp))
+
+    # plot (smooth line by interpolation points)
+    xs = np.linspace(1, 4, 200)
+    ys = np.interp(xs, xp, yp)
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(xs, ys, color="#d94b3b", linewidth=2, label="Perkiraan Harga (linear)")
+    ax.plot(xp, yp, 'o', color="#b30000", markersize=8, label="Data Mingguan (input)")
+    ax.scatter(week, pred_price, color="black", s=120, zorder=5, label=f"Prediksi (minggu {week:.1f})")
     ax.set_xlabel("Minggu")
     ax.set_ylabel("Harga (Rp)")
-    ax.set_title(f"Grafik Harga Cabai - {bulan}")
-    ax.grid(True, linestyle="--", alpha=0.5)
+    ax.set_title(f"Harga Mingguan — {month}")
+    ax.grid(alpha=0.25, linestyle="--")
     ax.legend()
     st.pyplot(fig)
 
-    # ===============================
-    #  WARNING UNTUK UMKM
-    # ===============================
-    st.subheader("⚠️ Peringatan & Rekomendasi UMKM")
+    # display numeric results
+    st.write("**Prediksi Harga:**", f"Rp {int(round(pred_price)):,}")
 
-    rata2 = np.mean(y)
-    pred_int = int(pred)
+    # -------------------------
+    # Warning logic (UMKM-friendly text)
+    # -------------------------
+    avg = np.mean(yp)
+    diff = pred_price - avg
 
-    if pred_int > rata2:
-        st.error(f"⚠️ Harga Minggu {minggu} diprediksi **TINGGI**: Rp {pred_int:,}")
-        st.write("""
-        **💡 Rekomendasi UMKM:**
-        - Kurangi pembelian stok besar.
-        - Cari pemasok alternatif dengan harga lebih stabil.
-        - Gunakan cabai secukupnya untuk menu harian.
+    # thresholds: tweakable
+    if diff > 3000:
+        # High: strong warning and UMKM actions
+        st.error(f"⚠️ Harga diprediksi *TINGGI* (Rp {int(round(pred_price)):,}).")
+        st.markdown("""
+        **Rekomendasi cepat untuk UMKM (Surakarta):**
+        - Tunda pembelian stok besar, beli secukupnya untuk 1–2 hari.  
+        - Cek beberapa pemasok lokal untuk bandingkan harga.  
+        - Pertimbangkan pembelian bersama (gabungan) dengan pelaku UMKM lain untuk mendapatkan harga grosir.
+        - Evaluasi menu: kurangi porsi cabai atau gunakan substitusi sementara.
+        """)
+    elif diff > 0:
+        # Slightly above average: caution
+        st.warning(f"🟡 Harga diprediksi sedikit di atas rata‑rata (Rp {int(round(pred_price)):,}).")
+        st.markdown("""
+        **Saran praktis untuk UMKM:**
+        - Beli stok untuk 2–3 hari, pantau harga harian.  
+        - Siapkan daftar pemasok cadangan dan catat harga tiap pasar.  
         """)
     else:
-        st.success(f"👍 Harga Minggu {minggu} diprediksi **STABIL**: Rp {pred_int:,}")
-        st.write("""
-        **💡 Tips UMKM:**
-        - Bisa membeli stok untuk 3–4 hari.
-        - Manfaatkan harga stabil untuk persiapan menu.
-        - Simpan cabai di kertas/kulkas agar awet.
+        # Below or equal avg: safe
+        st.success(f"🟢 Harga diprediksi *STABIL / AMAN* (Rp {int(round(pred_price)):,}).")
+        st.markdown("""
+        **Manfaat untuk UMKM:**
+        - Bisa membeli stok 3–5 hari.  
+        - Gunakan saat ini untuk rencanakan menu & promosi.  
+        - Simpan sebagian stok dengan teknik pendinginan sederhana.
         """)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    # -------------------------
+    # Optional: show table & download
+    # -------------------------
+    st.write("---")
+    st.subheader("Data Mingguan (tabel)")
+    df = pd.DataFrame({
+        "Minggu": ["1","2","3","4"],
+        "Harga (Rp)": [int(yp[0]), int(yp[1]), int(yp[2]), int(yp[3])]
+    })
+    st.dataframe(df, width=400)
 
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Download data mingguan (CSV)", data=csv, file_name=f"harga_mingguan_{month}.csv", mime="text/csv")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------------
+# Footer tips (small)
+# -------------------------
+st.markdown("""
+<div style="margin-top:12px; font-size:13px; color:#555;">
+  Catatan: ini adalah estimasi sederhana (interpolasi linear antar-minggu). Bila ingin prediksi jangka panjang
+  atau otomatis dari data historis pasar, bisa gunakan model time-series (opsional).
+</div>
+""", unsafe_allow_html=True)
 
