@@ -42,8 +42,19 @@ st.markdown("""
 # ===============================
 st.markdown("""
 <div class='header'>
-    <h1>🌶️ Prediksi Harga Cabai untuk UMKM</h1>
-    <p>Membantu UMKM mengatur strategi belanja cabai berdasarkan interpolasi mingguan</p>
+st.markdown("""
+    <div style='text-align:center; margin-bottom:20px;'>
+        <h1 style='color:#c10000; font-weight:800; font-size:38px;'>
+            🌶️ Prediksi Harga Cabai di Pasar Surakarta
+        </h1>
+        <h3 style='color:#444; font-weight:500; margin-top:-10px;'>
+            Aplikasi Analisis Harga untuk UMKM Pengguna Cabai
+        </h3>
+        <p style='color:#777; font-size:15px; margin-top:-5px;'>
+            Membantu UMKM memantau fluktuasi harga dan mengambil keputusan belanja yang lebih tepat
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 </div>
 """, unsafe_allow_html=True)
 
@@ -127,4 +138,5 @@ with col2:
         """)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
