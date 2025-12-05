@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # Page config
 # -------------------------
 st.set_page_config(
-    page_title="Prediksi Harga Cabai di Pasar Surakarta untuk UMKM",
+    page_title="Prediksi Harga Cabai di Jawa Tengah untuk UMKM",
     page_icon="🌶️",
     layout="wide"
 )
@@ -48,7 +48,7 @@ st.markdown("""
 # -------------------------
 st.markdown("""
 <div class="header">
-  <h1 style="margin:0;">🌶️ Prediksi Harga Cabai di Pasar Surakarta untuk UMKM</h1>
+  <h1 style="margin:0;">🌶️ Prediksi Harga Cabai di Jawa Tengah untuk UMKM</h1>
   <div style="opacity:0.95; margin-top:6px;">Aplikasi visual untuk membantu UMKM memantau harga mingguan dan mengambil keputusan belanja</div>
 </div>
 """, unsafe_allow_html=True)
@@ -179,4 +179,5 @@ st.markdown("""
   atau otomatis dari data historis pasar, bisa gunakan model time-series (opsional).
 </div>
 """, unsafe_allow_html=True)
+
 
