@@ -2,155 +2,107 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------------------------------------------------
-#   CONFIG HALAMAN
-# ---------------------------------------------------
+# ==========================
+#   SETTING HALAMAN
+# ==========================
 st.set_page_config(
-    page_title="Prediksi Harga Cabai Mingguan",
+    page_title="Prediksi Harga Cabai",
     page_icon="🌶️",
     layout="wide"
 )
 
-# ---------------------------------------------------
-#   CSS CUSTOM BIAR SUPER CANTIK
-# ---------------------------------------------------
+# ==========================
+#   CSS AESTHETIC
+# ==========================
 st.markdown("""
 <style>
-
-body {
-    background: #fff8f6;
-}
-
-.header {
-    background: linear-gradient(90deg, #ff3c3c, #ff7d47);
-    padding: 25px; 
-    border-radius: 12px;
-    text-align: center;
-    color: white;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.box {
-    background: white;
-    padding: 22px;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
-    margin-bottom: 20px;
-    border-left: 5px solid #ff4d4d;
-}
-
-.result-card {
-    padding: 20px;
-    border-radius: 12px;
-    color: white;
-    margin-top: 10px;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.safe { background: #2ecc71; }
-.warning { background: #e74c3c; }
-
+    body {
+        background-color: #fafafa;
+    }
+    .header-box {
+        background: linear-gradient(90deg, #ff4d4d, #b30000);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .sub-box {
+        background: #ffffffcc;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------
+# ==========================
 #   HEADER
-# ---------------------------------------------------
-st.markdown("""
-<div class='header'>
-    <h1>🌶️ Prediksi Harga Cabai Mingguan</h1>
-    <h3>Interpolasi Linear • Dashboard Interaktif</h3>
-</div>
-""", unsafe_allow_html=True)
+# ==========================
+st.markdown("<div class='header-box'><h1>🌶️ Prediksi Harga Cabai Mingguan</h1><p>Interpolasi Linear – Data UMKM</p></div>", unsafe_allow_html=True)
 
+# ==========================
+#   DATA PER BULAN
+# ==========================
+data_bulanan = {
+    "Agustus": [38000, 40000, 39000, 41000],
+    "September": [42000, 43000, 41500, 44000],
+    "Oktober": [45000, 47000, 46000, 48000],
+    "November": [49000, 51000, 50000, 52000]
+}
 
-# ---------------------------------------------------
-#   LAYOUT 2 KOLOM
-# ---------------------------------------------------
+# ==========================
+#   LAYOUT
+# ==========================
 col1, col2 = st.columns([1, 2])
 
-# ---------------------------------------------------
-#   KOLOM KIRI (INPUT)
-# ---------------------------------------------------
+# ==========================
+#   KOLOM 1 — INPUT
+# ==========================
 with col1:
-    st.markdown("<div class='box'>", unsafe_allow_html=True)
-    st.subheader("📥 Input Harga Bulanan (Agustus–November)")
+    st.markdown("<div class='sub-box'>", unsafe_allow_html=True)
+    st.subheader("🗓️ Pilih Bulan & Minggu")
 
-    months = ["Agustus", "September", "Oktober", "November"]
-    month_prices = {}
-
-    for m in months:
-        month_prices[m] = st.number_input(
-            f"Harga rata-rata {m} (Rp)",
-            value=40000,
-            min_value=0
-        )
-
-    proses = st.button("🔄 Proses Prediksi", use_container_width=True)
+    bulan = st.selectbox("Pilih Bulan", list(data_bulanan.keys()))
+    minggu = st.slider("Minggu ke-", 1, 4, 1)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+# ==========================
+#   PROSES DATA
+# ==========================
+harga_mingguan = data_bulanan[bulan]
 
-# ---------------------------------------------------
-#   KOLOM KANAN (OUTPUT)
-# ---------------------------------------------------
+# Interpolasi Linear sederhana
+minggu_x = np.array([1,2,3,4])
+harga_y = np.array(harga_mingguan)
+prediksi = np.interp(minggu, minggu_x, harga_y)
+
+# ==========================
+#   KOLOM 2 — OUTPUT
+# ==========================
 with col2:
-    st.markdown("<div class='box'>", unsafe_allow_html=True)
-    st.subheader("📊 Grafik & Prediksi Mingguan")
+    st.markdown("<div class='sub-box'>", unsafe_allow_html=True)
+    st.subheader("📊 Hasil Prediksi")
 
-    if proses:
+    # GRAFIK
+    fig, ax = plt.subplots(figsize=(7,4))
+    ax.plot(minggu_x, harga_y, "o-", color="#cc0000", linewidth=2)
+    ax.scatter(minggu, prediksi, s=150, color="black", label=f"Prediksi Minggu {minggu}")
+    ax.set_xlabel("Minggu")
+    ax.set_ylabel("Harga (Rp)")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.set_title(f"Grafik Harga Cabai – {bulan}")
 
-        # --------------------------
-        # 1. Interpolasi Linear
-        # --------------------------
-        minggu_ke = np.array([1, 5, 9, 13])
-        harga_bulan = np.array([
-            month_prices["Agustus"],
-            month_prices["September"],
-            month_prices["Oktober"],
-            month_prices["November"]
-        ])
+    st.pyplot(fig)
 
-        minggu_full = np.arange(1, 14)
-        harga_mingguan = np.interp(minggu_full, minggu_ke, harga_bulan)
-
-        # --------------------------
-        # 2. Slider Minggu
-        # --------------------------
-        pilih = st.slider("Pilih minggu", 1, 13, 1)
-        prediksi = harga_mingguan[pilih - 1]
-
-        # --------------------------
-        # 3. Grafik
-        # --------------------------
-        fig, ax = plt.subplots(figsize=(8, 4))
-        ax.plot(minggu_full, harga_mingguan, "-o", color="#ff3c3c", label="Harga Mingguan")
-        ax.scatter(pilih, prediksi, s=150, color="#000", label=f"Prediksi Minggu {pilih}")
-        ax.grid(alpha=0.3)
-        ax.set_xlabel("Minggu")
-        ax.set_ylabel("Harga (Rp)")
-        ax.legend()
-        ax.set_title("Prediksi Harga Cabai per Minggu")
-        st.pyplot(fig)
-
-        # --------------------------
-        # 4. Hasil + Warning
-        # --------------------------
-
-        rata2 = np.mean(harga_mingguan)
-
-        if prediksi > rata2:
-            st.markdown(
-                f"<div class='result-card warning'>⚠️ Harga Tinggi! Prediksi: Rp {int(prediksi):,}</div>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                f"<div class='result-card safe'>🟢 Harga Aman! Prediksi: Rp {int(prediksi):,}</div>",
-                unsafe_allow_html=True
-            )
+    # ALERT
+    st.write("### 🔍 Analisis Harga")
+    if prediksi > np.mean(harga_y):
+        st.error(f"⚠️ Harga diprediksi TINGGI: **Rp {int(prediksi):,}**")
+    else:
+        st.success(f"Harga diprediksi AMAN: **Rp {int(prediksi):,}**")
 
     st.markdown("</div>", unsafe_allow_html=True)
-
